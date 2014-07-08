@@ -205,7 +205,58 @@ class Player:
 		print "--- end ---\n"
 
 
+def show_sq_gaps(myPlayers):
+	sum_of_sq_gap = 0
 
+	print "\n--- squared gaps ---"
+
+	print "impermanancism5p:\t",
+	for player in myPlayers:
+		for r in player.recordbox.impermanancism_five_ars:
+			sum_of_sq_gap += r.gap**2
+	print "%f\n" % sum_of_sq_gap
+	sum_of_sq_gap = 0
+
+	print "impermanancism1p:\t",
+	for player in myPlayers:
+		for r in player.recordbox.impermanancism_one_ars:
+			sum_of_sq_gap += r.gap**2
+	print "%f\n" % sum_of_sq_gap
+	sum_of_sq_gap = 0
+
+	print "totalism:\t",
+	for player in myPlayers:
+		for r in player.recordbox.totalism_ars:
+			sum_of_sq_gap += r.gap**2
+	print "%f\n" % sum_of_sq_gap
+	sum_of_sq_gap = 0
+
+
+def show_deviation(myPlayers):
+	sum_of_sq_gap = 0
+
+	print "\n--- deviation ---"
+
+	print "impermanancism5p:\t",
+	for player in myPlayers:
+		for r in player.recordbox.impermanancism_five_ars:
+			sum_of_sq_gap += r.gap**2
+	print "%f\n" % math.sqrt(sum_of_sq_gap/len(myPlayers))
+	sum_of_sq_gap = 0
+
+	print "impermanancism1p:\t",
+	for player in myPlayers:
+		for r in player.recordbox.impermanancism_one_ars:
+			sum_of_sq_gap += r.gap**2
+	print "%f\n" % math.sqrt(sum_of_sq_gap/len(myPlayers))
+	sum_of_sq_gap = 0
+
+	print "totalism:\t",
+	for player in myPlayers:
+		for r in player.recordbox.totalism_ars:
+			sum_of_sq_gap += r.gap**2
+	print "%f\n" % math.sqrt(sum_of_sq_gap/len(myPlayers))
+	sum_of_sq_gap = 0
 
 
 ##------------------------------------------------------------------------------------------------
@@ -249,10 +300,12 @@ time.sleep(1)
 
 
 if __name__ == '__main__':
-	player_id = 10
-	players[player_id].show_impermanancism_five_records()
-	players[player_id].show_impermanancism_one_records()
-	players[player_id].show_totalism_records()
-	players[player_id].show_gaps()
-	players[player_id].show_sq_gaps()
-	print players[player_id].name
+	show_sq_gaps(players)
+	show_deviation(players)
+	#player_id = 10
+	#players[player_id].show_impermanancism_five_records()
+	#players[player_id].show_impermanancism_one_records()
+	#players[player_id].show_totalism_records()
+	#players[player_id].show_gaps()
+	#players[player_id].show_sq_gaps()
+	#print players[player_id].name
