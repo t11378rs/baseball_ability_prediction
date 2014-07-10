@@ -34,7 +34,7 @@ class Record:
 class AdvancedRecord(Record):
 	def __init__(self, myYear, myAb, myHit, myBb, myHbp, mySf, myTotalPa, myTotalObp, myZobp, myEvaluation, myGap):
 		Record.__init__(self, myYear, myAb, myHit, myBb, myHbp, mySf)
-		self.total_pa = float(myTotalPa)
+		self.total_pa = float(myTotalPa)#正確にはPAじゃないから扱いに注意
 		self.total_obp = float(myTotalObp)
 		self.zobp = float(myZobp)
 		self.evaluation = myEvaluation
@@ -53,6 +53,8 @@ class RecordBox:
 		self.totalism_ars = self.make_totalism_ars(FIVE_PERSENT)
 		self.impermanancism_five_ars = self.make_impermanancism_ars(FIVE_PERSENT)
 		self.impermanancism_one_ars = self.make_impermanancism_ars(ONE_PERSENT)
+		self.shortsightedness_lastyear_ars = self.make_shortsightedness_ars(FIVE_PERSENT,1)
+		#self.shortsightedness_3years_ars = self.make_shortsightedness_ars(FIVE_PERSENT,3)
 
 	def make_totalism_ars(self, level):
 		ars = []
@@ -76,6 +78,20 @@ class RecordBox:
 			total_n, total_obp = self.calc_total_obp(i, time_of_the_change) #覚醒後通算OBPと覚醒後通算打数を計算する
 			latest_n=r.ab+r.bb+r.hbp+r.sf #今シーズンのnを算出する(ほぼPAだけど厳密に、AB+BB+HBP+SFしてる)
 			zobp = self.calc_zobp(total_n, total_obp, latest_n, r.obp) #現在の今年度成績と覚醒後通算成績とを比較してzOBPを出す
+			evaluation, time_of_the_change = self.evaluate_zobp(zobp, i, time_of_the_change, level) #zOBPに応じて覚醒を記録する
+			gap = r.obp - total_obp#現在の今年度成績と通算成績(即ち予測値)との差を出す
+			ar = AdvancedRecord(r.year, r.ab, r.hit, r.bb, r.hbp, r.sf, total_n, total_obp, zobp, evaluation, gap) #通算成績と、zOBPを追加したAdvancedRecordを作る
+			ars.append(ar) #arsに追加
+		return ars
+
+	def make_shortsightedness_ars(self, level, year):
+		ars = []
+		zobp = 0
+		time_of_the_change = 0 #カウントの何回目が最後の能力変化か記録する変数。あるけど使っていない
+		for i,r in enumerate(self.records):
+			total_n, total_obp = self.calc_total_obp(i, i-year) #通算OPBと打数を計算する。常に通算計算の起点は去年
+			latest_n=r.ab+r.bb+r.hbp+r.sf #今シーズンのnを算出する(ほぼPAだけど厳密に、AB+BB+HBP+SFしてる)
+			zobp = self.calc_zobp(total_n, total_obp, latest_n, r.obp) #現在の今年度成績と通算成績とを比較してzOBPを出す
 			evaluation, time_of_the_change = self.evaluate_zobp(zobp, i, time_of_the_change, level) #zOBPに応じて覚醒を記録する
 			gap = r.obp - total_obp#現在の今年度成績と通算成績(即ち予測値)との差を出す
 			ar = AdvancedRecord(r.year, r.ab, r.hit, r.bb, r.hbp, r.sf, total_n, total_obp, zobp, evaluation, gap) #通算成績と、zOBPを追加したAdvancedRecordを作る
@@ -205,6 +221,17 @@ class Player:
 		print "--- end ---\n"
 
 
+#プレイヤーを引数に取る関数群
+def show_all_records(myPlayers):
+	print "\n--- all players ---"
+	for player in myPlayers:
+		print "name:",
+		print player.name,
+		print "total obp:",
+		print player.recordbox.totalism_ars[len(player.recordbox.totalism_ars)-1].total_obp,
+		print "lastyer ab:",
+		print player.recordbox.records[len(player.recordbox.records)-1].ab
+
 def show_sq_gaps(myPlayers):
 	sum_of_sq_gap = 0
 
@@ -230,6 +257,22 @@ def show_sq_gaps(myPlayers):
 			sum_of_sq_gap += r.gap**2
 	print "%f\n" % sum_of_sq_gap
 	sum_of_sq_gap = 0
+
+	print "shortsightedness last year:\t",
+	for player in myPlayers:
+		for r in player.recordbox.shortsightedness_lastyear_ars:
+			sum_of_sq_gap += r.gap**2
+	print "%f\n" % sum_of_sq_gap
+	sum_of_sq_gap = 0
+
+	'''
+	print "shortsightedness 3 year:\t",
+	for player in myPlayers:
+		for r in player.recordbox.shortsightedness_3years_ars:
+			sum_of_sq_gap += r.gap**2
+	print "%f\n" % sum_of_sq_gap
+	sum_of_sq_gap = 0
+	'''
 
 
 def show_deviation(myPlayers):
@@ -258,6 +301,21 @@ def show_deviation(myPlayers):
 	print "%f\n" % math.sqrt(sum_of_sq_gap/len(myPlayers))
 	sum_of_sq_gap = 0
 
+	print "shortsightedness last year:\t",
+	for player in myPlayers:
+		for r in player.recordbox.shortsightedness_lastyear_ars:
+			sum_of_sq_gap += r.gap**2
+	print "%f\n" % math.sqrt(sum_of_sq_gap/len(myPlayers))
+	sum_of_sq_gap = 0
+
+	'''
+	print "shortsightedness 3 years:\t",
+	for player in myPlayers:
+		for r in player.recordbox.shortsightedness_3years_ars:
+			sum_of_sq_gap += r.gap**2
+	print "%f\n" % math.sqrt(sum_of_sq_gap/len(myPlayers))
+	sum_of_sq_gap = 0
+	'''
 
 ##------------------------------------------------------------------------------------------------
 print "connecting...\n"
@@ -276,6 +334,7 @@ all_of_them = cur.fetchall()
 cur.close()
 conn.close()
 
+
 print "start making players"
 players = [] #選手をぶちこむリスト
 records = [] #成績を"一時的に"ぶちこむリスト
@@ -289,19 +348,22 @@ for i, row in enumerate(all_of_them):
 		name = tmp_name #さっきまでの名前を入れ替える
 		first_row_index = i #いまのインデックスを最初のrowにする
 	#もしこの行が使える行なら、recordsにいれる。
-	if( isinstance(row[1],int) and isinstance(row[8],int) and isinstance(row[10],int) and isinstance(row[17],int) and isinstance(row[25],int) and isinstance(row[27],int) ):
+	if(isinstance(row[1],int) and isinstance(row[8],int) and isinstance(row[10],int) and isinstance(row[17],int) and isinstance(row[25],int) and isinstance(row[27],int) ):
 		records.append(Record(row[1],row[8],row[10],row[17],row[25],row[27])) #recordsに加える
+	else:
+		records.append(Record(0,0,0,0,0,0))#ダメなデータならとりあえず全部0
 	if( i%(len(all_of_them)/50)==0 ):
 		print "#",
+del players[0] #なんか0番目にNone入ってたから対処的に
 print "done\n"
 time.sleep(1)
-
 
 
 
 if __name__ == '__main__':
 	show_sq_gaps(players)
 	show_deviation(players)
+	show_all_records(players)
 	#player_id = 10
 	#players[player_id].show_impermanancism_five_records()
 	#players[player_id].show_impermanancism_one_records()
